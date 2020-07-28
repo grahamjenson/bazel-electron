@@ -1,0 +1,32 @@
+###
+# Electron App
+###
+
+load(":electron.bzl", "electron_app")
+electron_app(
+    name = "simple-app",
+    app_name = "simple-app",
+    index_html = ":index.html",
+    main_js = ":main.js",
+)
+
+###
+# Electron Rule
+###
+
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+exports_files(["run.sh.tpl"])
+
+go_library(
+    name = "go_default_library",
+    srcs = ["bundle.go"],
+    importpath = "github.com/grahamjenson/mymono/tools/electron",
+    visibility = ["//visibility:private"],
+)
+
+go_binary(
+    name = "bundle",
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
+)
