@@ -23,7 +23,7 @@ function createWindow () {
   const windowOptions = {
     width: 600,
     minWidth: 600,
-    height: 200,
+    height: 300,
     title: app.getName()
   }
 

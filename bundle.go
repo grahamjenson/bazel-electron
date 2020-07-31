@@ -22,6 +22,8 @@ func main() {
 	indexHTML := os.Args[4]
 	electronZIP := os.Args[5]
 
+	appName := name + ".app/"
+
 	// 1. Extract electronZIP file
 	// 2. add Contents/Contents/Resources/app/ main.js index.html package.json
 	// 3. tar contents back into <name>.app
@@ -32,27 +34,28 @@ func main() {
 		log.Fatal("\nError UNZIP: %s\n\n", err.Error())
 	}
 
-	appFiles := map[string]string{}
+	tarFiles := map[string]string{}
 	for _, f := range rawFiles {
-		if strings.HasPrefix(f, "electronZIP/Electron.app/") {
-			appFiles[f] = name + ".app/" + strings.TrimPrefix(f, "electronZIP/Electron.app/")
+		zipPrefix := "electronZIP/Electron.app/"
+		if strings.HasPrefix(f, zipPrefix) {
+			tarFiles[f] = appName + strings.TrimPrefix(f, zipPrefix)
 		}
 	}
 
 	// Write out our application files
-	appFiles[mainJS] = name + ".app/Contents/Resources/app/main.js"
-	appFiles[indexHTML] = name + ".app/Contents/Resources/app/index.html"
+	tarFiles[mainJS] = appName + "Contents/Resources/app/main.js"
+	tarFiles[indexHTML] = appName + "Contents/Resources/app/index.html"
 	ioutil.WriteFile("package.json", []byte(PACKAGE_JSON), 0644)
-	appFiles["package.json"] = name + ".app/Contents/Resources/app/package.json"
+	tarFiles["package.json"] = appName + "Contents/Resources/app/package.json"
 
-	err = tarFiles(outputFile, appFiles)
+	err = writeTar(outputFile, tarFiles)
 	if err != nil {
 		log.Fatal("\nError ZIP: %s\n\n", err.Error())
 	}
 }
 
 // tarrer walks paths to create tar file tarName
-func tarFiles(tarName string, files map[string]string) error {
+func writeTar(tarName string, files map[string]string) error {
 	tarFile, err := os.Create(tarName)
 	if err != nil {
 		return err
